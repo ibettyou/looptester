@@ -116,7 +116,7 @@ namespace Loopback
                 this.displayName = !string.IsNullOrEmpty(this.description) ? this.description : normalizedDisplayName;
                 if (string.IsNullOrEmpty(this.displayName))
                 {
-                    this.displayName = _appContainerName;
+                    this.displayName = NormalizeAppName(_appContainerName);
                 }
                 this.workingDirectory = _workingDirectory;
                 String tempSid;
@@ -136,10 +136,22 @@ namespace Loopback
                 if (name.Length > 0 && name[0] == '@')
                 {
                     var resolved = ResolveIndirectString(name);
-                    if (!string.IsNullOrEmpty(resolved))
+                    if (!string.IsNullOrEmpty(resolved) && resolved != name)
                     {
                         return resolved.Trim();
                     }
+
+                    var compact = TryExtractCompactIdentifier(name);
+                    if (!string.IsNullOrEmpty(compact))
+                    {
+                        return compact;
+                    }
+                }
+
+                var compactFromPackageName = TryExtractCompactIdentifierFromPackageName(name);
+                if (!string.IsNullOrEmpty(compactFromPackageName))
+                {
+                    return compactFromPackageName;
                 }
 
                 return name;
@@ -157,6 +169,60 @@ namespace Loopback
                 if (hr == 0)
                 {
                     return buffer.ToString();
+                }
+
+                return null;
+            }
+
+            private static string TryExtractCompactIdentifier(string indirect)
+            {
+                if (string.IsNullOrEmpty(indirect))
+                {
+                    return null;
+                }
+
+                if (!(indirect.Length >= 3 && indirect[0] == '@' && indirect[1] == '{'))
+                {
+                    return null;
+                }
+
+                var endBrace = indirect.IndexOf('}', 2);
+                if (endBrace <= 2)
+                {
+                    return null;
+                }
+
+                var inner = indirect.Substring(2, endBrace - 2);
+                var stopIndex = inner.IndexOf('_');
+                if (stopIndex < 0)
+                {
+                    stopIndex = inner.IndexOf('?');
+                }
+
+                var candidate = stopIndex > 0 ? inner.Substring(0, stopIndex) : inner;
+                candidate = candidate.Trim();
+
+                Guid parsed;
+                if (Guid.TryParse(candidate, out parsed))
+                {
+                    return candidate;
+                }
+
+                return string.IsNullOrEmpty(candidate) ? null : candidate;
+            }
+
+            private static string TryExtractCompactIdentifierFromPackageName(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
+
+                value = value.Trim();
+                var underscoreIndex = value.IndexOf('_');
+                if (underscoreIndex > 0)
+                {
+                    return value.Substring(0, underscoreIndex);
                 }
 
                 return null;
