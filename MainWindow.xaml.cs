@@ -51,7 +51,14 @@ namespace Loopback
         {
             try
             {
-                _resourceManager = new ResourceManager("Loopback.Strings", Assembly.GetExecutingAssembly());
+                if (_currentCulture != null && _currentCulture.Name == "zh-CN")
+                {
+                    _resourceManager = new ResourceManager("Loopback.Strings_zh_CN", Assembly.GetExecutingAssembly());
+                }
+                else
+                {
+                    _resourceManager = new ResourceManager("Loopback.Strings_en", Assembly.GetExecutingAssembly());
+                }
                 ApplyResources();
             }
             catch (Exception ex)
@@ -65,15 +72,15 @@ namespace Loopback
             try
             {
                 var resources = new Dictionary<string, string>();
-                resources["WindowTitle"] = _resourceManager.GetString("WindowTitle", _currentCulture) ?? "Loopback Exemption Manager";
-                resources["SaveButton"] = _resourceManager.GetString("SaveButton", _currentCulture) ?? "Save";
-                resources["RefreshButton"] = _resourceManager.GetString("RefreshButton", _currentCulture) ?? "Refresh";
-                resources["ExemptColumn"] = _resourceManager.GetString("ExemptColumn", _currentCulture) ?? "Exempt";
-                resources["AppNameColumn"] = _resourceManager.GetString("AppNameColumn", _currentCulture) ?? "App Name";
-                resources["StatusLabel"] = _resourceManager.GetString("StatusLabel", _currentCulture) ?? "Status:";
-                resources["LanguageButton"] = _resourceManager.GetString("LanguageButton", _currentCulture) ?? "中文";
-                resources["SelectAllButton"] = _resourceManager.GetString("SelectAllButton", _currentCulture) ?? "Select All";
-                resources["DeselectAllButton"] = _resourceManager.GetString("DeselectAllButton", _currentCulture) ?? "Deselect All";
+                resources["WindowTitle"] = _resourceManager.GetString("WindowTitle") ?? "Loopback Exemption Manager";
+                resources["SaveButton"] = _resourceManager.GetString("SaveButton") ?? "Save";
+                resources["RefreshButton"] = _resourceManager.GetString("RefreshButton") ?? "Refresh";
+                resources["ExemptColumn"] = _resourceManager.GetString("ExemptColumn") ?? "Exempt";
+                resources["AppNameColumn"] = _resourceManager.GetString("AppNameColumn") ?? "App Name";
+                resources["StatusLabel"] = _resourceManager.GetString("StatusLabel") ?? "Status:";
+                resources["LanguageButton"] = _resourceManager.GetString("LanguageButton") ?? "中文";
+                resources["SelectAllButton"] = _resourceManager.GetString("SelectAllButton") ?? "Select All";
+                resources["DeselectAllButton"] = _resourceManager.GetString("DeselectAllButton") ?? "Deselect All";
 
                 foreach (var key in resources.Keys)
                 {
@@ -99,7 +106,7 @@ namespace Loopback
             {
                 _currentCulture = new CultureInfo("zh-CN");
             }
-            ApplyResources();
+            LoadResources();
         }
 
         private void btnGithub_Click(object sender, RoutedEventArgs e)
@@ -140,17 +147,17 @@ namespace Loopback
         {
             if (!isDirty) 
             {
-                Log(_resourceManager.GetString("NothingToSave", _currentCulture));
+                Log(_resourceManager.GetString("NothingToSave"));
                 return; 
             }
 
             isDirty = false;
             if (_loop.SaveLoopbackState())
             { 
-                Log(_resourceManager.GetString("SavedExemptions", _currentCulture));
+                Log(_resourceManager.GetString("SavedExemptions"));
             }
             else
-            { Log(_resourceManager.GetString("ErrorSaving", _currentCulture)); }
+            { Log(_resourceManager.GetString("ErrorSaving")); }
         }
 
         private void btnRefresh_Click(object sender, RoutedEventArgs e)
@@ -158,15 +165,15 @@ namespace Loopback
             _loop.LoadApps();
             dgLoopback.Items.Refresh();
             isDirty = false;
-            Log(_resourceManager.GetString("Refreshed", _currentCulture));
+            Log(_resourceManager.GetString("Refreshed"));
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             if (isDirty)
             {
-                string title = _resourceManager.GetString("UnsavedChangesTitle", _currentCulture);
-                string message = _resourceManager.GetString("UnsavedChangesMessage", _currentCulture);
+                string title = _resourceManager.GetString("UnsavedChangesTitle");
+                string message = _resourceManager.GetString("UnsavedChangesMessage");
                 MessageBoxResult resp=System.Windows.MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (resp==MessageBoxResult.No)
                 {

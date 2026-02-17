@@ -1,4 +1,4 @@
-name: Build Single-File Windows EXE
+name: Build .NET Framework Project
 
 on:
   push:
@@ -15,16 +15,54 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
 
-    - name: Publish (single-file, self-contained)
-      run: dotnet publish .\Loopback.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=true /p:DebugType=None /p:DebugSymbols=false -o .\artifacts\win-x64
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
 
-    - name: Upload artifacts
+    - name: Restore NuGet packages
+      run: nuget restore Loopback.csproj
+
+    - name: Build Release
+      run: msbuild Loopback.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:DebugType=None /p:DebugSymbols=false /v:m
+
+    - name: Prepare single-file EXE (no installer)
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $exe = Join-Path $PWD 'bin\Release\WindowsLoopbackManager.exe'
+        if (!(Test-Path $exe)) { throw "EXE not found: $exe" }
+        New-Item -ItemType Directory -Force -Path 'dist\single' | Out-Null
+        Copy-Item $exe 'dist\single\WindowsLoopbackManager.exe' -Force
+        Get-FileHash 'dist\single\WindowsLoopbackManager.exe' -Algorithm SHA256 | Format-List
+
+    - name: Install UPX
+      run: choco install upx -y
+
+    - name: Prepare UPX-compressed single-file EXE
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        New-Item -ItemType Directory -Force -Path 'dist\single-upx' | Out-Null
+        Copy-Item 'dist\single\WindowsLoopbackManager.exe' 'dist\single-upx\WindowsLoopbackManager.exe' -Force
+        upx -6 --lzma 'dist\single-upx\WindowsLoopbackManager.exe'
+        Get-FileHash 'dist\single-upx\WindowsLoopbackManager.exe' -Algorithm SHA256 | Format-List
+
+    - name: Upload Release artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: WindowsLoopbackManager-win-x64-singlefile
-        path: artifacts\win-x64\
+        name: WindowsLoopbackManager-Release
+        path: bin\Release\
+
+    - name: Upload single-file EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: WindowsLoopbackManager-single-exe
+        path: dist\single\WindowsLoopbackManager.exe
+
+    - name: Upload UPX single-file EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: WindowsLoopbackManager-single-exe-upx
+        path: dist\single-upx\WindowsLoopbackManager.exe

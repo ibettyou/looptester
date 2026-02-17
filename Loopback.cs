@@ -102,15 +102,17 @@ namespace Loopback
         {
             public String appContainerName { get; set; }
             public String displayName { get; set; }
+            public String description { get; set; }
             public String workingDirectory { get; set; }
             public String StringSid { get; set; }   
             public List<uint> capabilities { get; set; }
             public bool LoopUtil { get; set; }
 
-            public AppContainer(String _appContainerName, String _displayName, String _workingDirectory, IntPtr _sid)
+            public AppContainer(String _appContainerName, String _description, String _displayName, String _workingDirectory, IntPtr _sid)
             {
                 this.appContainerName = _appContainerName;
-                this.displayName = ProcessDisplayName(_displayName);
+                this.description = ProcessDisplayName(_description);
+                this.displayName = string.IsNullOrEmpty(this.description) ? ProcessDisplayName(_displayName) : this.description;
                 this.workingDirectory = _workingDirectory;
                 String tempSid;
                 ConvertSidToStringSid(_sid, out tempSid);
@@ -154,7 +156,7 @@ namespace Loopback
             _AppListConfig = PI_NetworkIsolationGetAppContainerConfig();
             foreach (var PI_app in _AppList)
             {
-                AppContainer app = new AppContainer(PI_app.appContainerName, PI_app.displayName, PI_app.workingDirectory, PI_app.appContainerSid);
+                AppContainer app = new AppContainer(PI_app.appContainerName, PI_app.description, PI_app.displayName, PI_app.workingDirectory, PI_app.appContainerSid);
 
                 var app_capabilities = LoopUtil.getCapabilites(PI_app.capabilities);
                 if (app_capabilities.Count > 0)
