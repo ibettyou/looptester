@@ -1,0 +1,14 @@
+D:\AAA\looptest\obj\Debug\Loopback.csprojResolveAssemblyReference.cache
+D:\AAA\looptest\obj\Debug\MainWindow.g.cs
+D:\AAA\looptest\obj\Debug\App.g.cs
+D:\AAA\looptest\obj\Debug\WindowsLoopbackManager_MarkupCompile.cache
+D:\AAA\looptest\obj\Debug\WindowsLoopbackManager_MarkupCompile.lref
+D:\AAA\looptest\obj\Debug\MainWindow.baml
+D:\AAA\looptest\obj\Debug\WindowsLoopbackManager.g.resources
+D:\AAA\looptest\obj\Debug\Loopback.Properties.Resources.resources
+D:\AAA\looptest\obj\Debug\Loopback.Strings.en.resources
+D:\AAA\looptest\obj\Debug\Loopback.Strings.zh-CN.resources
+D:\AAA\looptest\obj\Debug\Loopback.csproj.GenerateResource.Cache
+D:\AAA\looptest\obj\Debug\en\WindowsLoopbackManager.resources.dll
+D:\AAA\looptest\obj\Debug\WindowsLoopbackManager.exe
+D:\AAA\looptest\obj\Debug\WindowsLoopbackManager.pdb
