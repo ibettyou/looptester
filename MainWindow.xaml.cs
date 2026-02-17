@@ -192,7 +192,7 @@ namespace Loopback
 
         private void Log(String logtxt) 
         {
-                txtStatus.Text = DateTime.Now.ToString("hh:mm:ss.fff ") + logtxt;
+                txtStatus.Text = DateTime.Now.ToString("HH:mm:ss.fff ") + logtxt;
         }
 
     }

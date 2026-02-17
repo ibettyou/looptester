@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,11 +8,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Windows Loopback Manager")]
-[assembly: AssemblyDescription("Manage Windows Loopback excemptions")]
+[assembly: AssemblyDescription("Windows Loopback Manager | https://github.com/appshubcc/Windows-Loopback-Manager")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Tiago Andrade e Silva")]
+[assembly: AssemblyCompany("APPSHUB")]
 [assembly: AssemblyProduct("Windows Loopback Manager")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright © LITES")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

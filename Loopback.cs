@@ -80,7 +80,7 @@ namespace Loopback
  
         // Use this API to convert a string reference (e.g. "@{blah.pri?ms-resource://whatever}") into a plain string 
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        internal static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf);
+        internal static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr pvReserved);
 
         // Call this API to enumerate all of the AppContainers on the system 
         [DllImport("FirewallAPI.dll")]
@@ -111,28 +111,55 @@ namespace Loopback
             public AppContainer(String _appContainerName, String _description, String _displayName, String _workingDirectory, IntPtr _sid)
             {
                 this.appContainerName = _appContainerName;
-                this.description = ProcessDisplayName(_description);
-                this.displayName = string.IsNullOrEmpty(this.description) ? ProcessDisplayName(_displayName) : this.description;
+                this.description = NormalizeAppName(_description);
+                var normalizedDisplayName = NormalizeAppName(_displayName);
+                this.displayName = !string.IsNullOrEmpty(this.description) ? this.description : normalizedDisplayName;
+                if (string.IsNullOrEmpty(this.displayName))
+                {
+                    this.displayName = _appContainerName;
+                }
                 this.workingDirectory = _workingDirectory;
                 String tempSid;
                 ConvertSidToStringSid(_sid, out tempSid);
                 this.StringSid = tempSid;
             }
 
-            private String ProcessDisplayName(String displayName)
+            private static string NormalizeAppName(string name)
             {
-                if (string.IsNullOrEmpty(displayName))
+                if (string.IsNullOrEmpty(name))
                 {
-                    return displayName;
+                    return name;
                 }
 
-                int questionMarkIndex = displayName.IndexOf('?');
-                if (questionMarkIndex > 0)
+                name = name.Trim();
+
+                if (name.Length > 0 && name[0] == '@')
                 {
-                    return displayName.Substring(0, questionMarkIndex);
+                    var resolved = ResolveIndirectString(name);
+                    if (!string.IsNullOrEmpty(resolved))
+                    {
+                        return resolved.Trim();
+                    }
                 }
 
-                return displayName;
+                return name;
+            }
+
+            private static string ResolveIndirectString(string indirect)
+            {
+                if (string.IsNullOrEmpty(indirect))
+                {
+                    return indirect;
+                }
+
+                var buffer = new StringBuilder(1024);
+                var hr = SHLoadIndirectString(indirect, buffer, buffer.Capacity, IntPtr.Zero);
+                if (hr == 0)
+                {
+                    return buffer.ToString();
+                }
+
+                return null;
             }
         }
 
