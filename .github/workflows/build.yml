@@ -46,21 +46,32 @@ jobs:
         $ErrorActionPreference = 'Stop'
         New-Item -ItemType Directory -Force -Path 'dist\single-upx' | Out-Null
         Copy-Item 'dist\single\WindowsLoopbackManager.exe' 'dist\single-upx\WindowsLoopbackManager.exe' -Force
-        try {
-          upx -6 --lzma 'dist\single-upx\WindowsLoopbackManager.exe'
+        
+        $upxOk = $false
+        
+        & upx -6 --lzma 'dist\single-upx\WindowsLoopbackManager.exe'
+        if ($LASTEXITCODE -eq 0) {
+          $upxOk = $true
+        }
+        else {
+          Write-Warning "UPX pack failed, retry with --force. ExitCode=$LASTEXITCODE"
+          & upx -6 --lzma --force 'dist\single-upx\WindowsLoopbackManager.exe'
+          if ($LASTEXITCODE -eq 0) {
+            $upxOk = $true
+          }
+          else {
+            Write-Warning "UPX pack failed even with --force. Skip UPX artifact. ExitCode=$LASTEXITCODE"
+          }
+        }
+        
+        if ($upxOk) {
           Get-FileHash 'dist\single-upx\WindowsLoopbackManager.exe' -Algorithm SHA256 | Format-List
         }
-        catch {
-          Write-Warning "UPX pack failed, retry with --force. Error: $($_.Exception.Message)"
-          try {
-            upx -6 --lzma --force 'dist\single-upx\WindowsLoopbackManager.exe'
-            Get-FileHash 'dist\single-upx\WindowsLoopbackManager.exe' -Algorithm SHA256 | Format-List
-          }
-          catch {
-            Write-Warning "UPX pack failed even with --force. Skip UPX artifact. Error: $($_.Exception.Message)"
-            Remove-Item 'dist\single-upx\WindowsLoopbackManager.exe' -Force -ErrorAction SilentlyContinue
-          }
+        else {
+          Remove-Item 'dist\single-upx\WindowsLoopbackManager.exe' -Force -ErrorAction SilentlyContinue
         }
+        
+        exit 0
 
     - name: Upload Release artifacts
       uses: actions/upload-artifact@v4
