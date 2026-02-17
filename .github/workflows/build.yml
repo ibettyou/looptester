@@ -1,4 +1,4 @@
-name: Build .NET Framework Project
+name: Build Single-File Windows EXE
 
 on:
   push:
@@ -15,20 +15,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2
+    - name: Publish (single-file, self-contained)
+      run: dotnet publish .\Loopback.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=true /p:DebugType=None /p:DebugSymbols=false -o .\artifacts\win-x64
 
-    - name: Restore NuGet packages
-      run: nuget restore Loopback.csproj
-
-    - name: Build Release
-      run: msbuild Loopback.csproj /p:Configuration=Release /p:Platform=AnyCPU /v:m
-
-    - name: Upload Release artifacts
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: WindowsLoopbackManager-Release
-        path: bin\Release\
+        name: WindowsLoopbackManager-win-x64-singlefile
+        path: artifacts\win-x64\
